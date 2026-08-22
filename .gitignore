@@ -1,9 +1,7 @@
-# Node
-node_modules/
-dist/
-.env
-
 # Python
+backend/venv/
+backend/__pycache__/
+backend/.env
 __pycache__/
 *.py[cod]
 *$py.class
@@ -11,6 +9,16 @@ venv/
 .venv/
 env/
 .env/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+node_modules/
+dist/
+
+# Environment
+.env
+*.env
 
 # Database
 instance/
