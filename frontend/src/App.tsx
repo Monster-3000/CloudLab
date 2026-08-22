@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
@@ -14,16 +13,16 @@ import Register from './pages/Register';
 import UsersManagement from './pages/UsersManagement';
 
 // Protected Route Wrapper
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
         return <Navigate to="/login" replace />;
     }
-    return children;
+    return <>{children}</>;
 };
 
 // Admin Route Wrapper
-const AdminRoute = ({ children }) => {
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     const userStr = localStorage.getItem('user');
     if (!userStr) return <Navigate to="/login" replace />;
     
@@ -32,7 +31,7 @@ const AdminRoute = ({ children }) => {
         if (user.role !== 'Administrator') {
             return <Navigate to="/" replace />;
         }
-        return children;
+        return <>{children}</>;
     } catch {
         return <Navigate to="/login" replace />;
     }

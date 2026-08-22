@@ -1,20 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Users, AlertTriangle, X } from 'lucide-react';
 import api from '../services/api';
 
-const UsersManagement = () => {
-    const [users, setUsers] = useState([]);
+interface UserItem {
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+}
+
+const UsersManagement: React.FC = () => {
+    const [users, setUsers] = useState<UserItem[]>([]);
     const [loading, setLoading] = useState(true);
     
     // Warning Modal State
     const [showWarningModal, setShowWarningModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
     const [warningMsg, setWarningMsg] = useState('');
     const [sending, setSending] = useState(false);
 
     const fetchUsers = async () => {
         try {
-            const res = await api.get('/users');
+            const res = await api.get<UserItem[]>('/users');
             setUsers(res.data);
         } catch (error) {
             console.error("Failed to fetch users", error);
@@ -27,26 +34,27 @@ const UsersManagement = () => {
         fetchUsers();
     }, []);
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (id: number) => {
         if (!window.confirm("Are you sure you want to permanently delete this user? All their instances and data will be lost.")) return;
         
         try {
             await api.delete(`/users/${id}`);
             fetchUsers();
-        } catch (error) {
+        } catch (error: any) {
             alert(error.response?.data?.message || "Failed to delete user");
         }
     };
 
-    const handleSendWarning = async (e) => {
+    const handleSendWarning = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!selectedUser) return;
         setSending(true);
         try {
             await api.post(`/users/${selectedUser.id}/warnings`, { message: warningMsg });
             setShowWarningModal(false);
             setWarningMsg('');
             alert("Warning dispatched successfully!");
-        } catch (error) {
+        } catch (error: any) {
             alert(error.response?.data?.message || "Failed to send warning");
         } finally {
             setSending(false);
@@ -78,11 +86,11 @@ const UsersManagement = () => {
                         <tbody className="divide-y divide-slate-700/50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-500">Loading users...</td>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading users...</td>
                                 </tr>
                             ) : users.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-500">No users found.</td>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No users found.</td>
                                 </tr>
                             ) : (
                                 users.map((user) => (

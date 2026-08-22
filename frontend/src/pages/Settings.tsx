@@ -1,5 +1,4 @@
-import React from 'react';
-import { User, Key, Moon, Bell } from 'lucide-react';
+import { Key, Bell } from 'lucide-react';
 
 const Settings = () => {
   return (

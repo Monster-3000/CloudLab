@@ -29,10 +29,14 @@ class VirtualMachine(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     instance_type = db.Column(db.String(50), default='t3.micro')
+    category = db.Column(db.String(50), default='General Purpose') # General Purpose, Compute, Memory, Storage, GPU, Database
     monthly_cost = db.Column(db.Float, default=14.50)
+    hourly_cost = db.Column(db.Float, default=0.02)
     cpu_cores = db.Column(db.Integer, default=2)
     ram_gb = db.Column(db.Integer, default=4)
     storage_gb = db.Column(db.Integer, default=20)
+    network_perf = db.Column(db.String(50), default='Up to 5 Gbps')
+    architecture = db.Column(db.String(30), default='x86_64') # x86_64, ARM64 (Graviton3)
     os = db.Column(db.String(50), default='Ubuntu 22.04')
     region = db.Column(db.String(50), default='us-east-1')
     vendor = db.Column(db.String(50), default='AWS') # AWS, Azure, GCP
@@ -46,10 +50,14 @@ class VirtualMachine(db.Model):
             'id': self.id,
             'name': self.name,
             'instance_type': self.instance_type,
+            'category': self.category,
             'monthly_cost': self.monthly_cost,
+            'hourly_cost': self.hourly_cost,
             'cpu_cores': self.cpu_cores,
             'ram_gb': self.ram_gb,
             'storage_gb': self.storage_gb,
+            'network_perf': self.network_perf,
+            'architecture': self.architecture,
             'os': self.os,
             'region': self.region,
             'vendor': self.vendor,

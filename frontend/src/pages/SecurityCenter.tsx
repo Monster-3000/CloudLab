@@ -1,5 +1,4 @@
-import React from 'react';
-import { Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, AlertTriangle } from 'lucide-react';
 
 const SecurityCenter = () => {
   return (

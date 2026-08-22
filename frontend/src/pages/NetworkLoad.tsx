@@ -1,4 +1,3 @@
-import React from 'react';
 import { Activity, Network } from 'lucide-react';
 
 const NetworkLoad = () => {

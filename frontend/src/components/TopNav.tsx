@@ -3,55 +3,74 @@ import { Bell, Search, Plus, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-const TopNav = () => {
+interface NotificationItem {
+  id: number;
+  user_id: number;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+const TopNav: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
-      try {
-          const res = await api.get('/notifications');
-          setNotifications(res.data);
-      } catch (err) {
-          // ignore
-      }
+    try {
+      const res = await api.get<NotificationItem[]>('/notifications');
+      setNotifications(res.data);
+    } catch (err) {
+      // ignore
+    }
   };
 
   useEffect(() => {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 10000);
-      return () => clearInterval(interval);
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
-      const handleClickOutside = (event) => {
-          if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-              setShowNotifications(false);
-          }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleMarkAsRead = async (id, e) => {
-      e.stopPropagation();
-      try {
-          await api.put(`/notifications/${id}/read`);
-          setNotifications(prev => prev.filter(n => n.id !== id));
-      } catch (err) {
-          console.error(err);
-      }
+  const handleMarkAsRead = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await api.put(`/notifications/${id}/read`);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/instances?search=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  const getStoredUser = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const currentUser = getStoredUser();
 
   return (
     <header className="h-16 glass border-b flex items-center justify-between px-6 z-30 relative">
@@ -123,14 +142,14 @@ const TopNav = () => {
 
         <div className="flex items-center space-x-3 pl-4 border-l border-slate-700/50 cursor-pointer group">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase">
-            {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).username.substring(0,2) : 'JD'}
+            {currentUser?.username ? currentUser.username.substring(0, 2) : 'JD'}
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">
-                {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).username : 'Guest'}
+                {currentUser?.username || 'Guest'}
             </span>
             <span className="text-xs text-slate-500">
-                {localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).role : 'User'}
+                {currentUser?.role || 'User'}
             </span>
           </div>
         </div>
