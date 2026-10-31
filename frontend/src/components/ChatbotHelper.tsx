@@ -108,7 +108,7 @@ const ChatbotHelper: React.FC = () => {
   
   // API Key State
   const [apiKey, setApiKey] = useState<string>('');
-  const [apiProvider, setApiProvider] = useState<string>('ollama');
+  const [apiProvider, setApiProvider] = useState<string>('gemini');
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
@@ -117,7 +117,7 @@ const ChatbotHelper: React.FC = () => {
     {
       id: '1',
       sender: 'bot',
-      text: '🌌 Welcome to the **Virtual Cloud Lab Assistant**!\n\nPowered by your local **Llama 3.2 3B** engine, I provide real-time cloud telemetry, AWS EC2 capacity planning, RDS recommendations, and architectural insights.',
+      text: '🌌 Welcome to the **Virtual Cloud Lab Assistant**!\n\nPowered by **Google Gemini AI**, I provide real-time cloud telemetry, AWS EC2 capacity planning, RDS recommendations, and architectural insights.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -218,8 +218,8 @@ const ChatbotHelper: React.FC = () => {
             <span className="block text-xs font-bold tracking-wide text-cyan-300 group-hover:text-cyan-200">
               Cloud Lab Assistant
             </span>
-            <span className="block text-[10px] text-slate-400 font-mono">
-              ⚡ Llama 3.2 3B • Live
+            <span className="block text-[10px] text-cyan-400 font-mono">
+              ✨ Gemini AI • Live
             </span>
           </div>
         </motion.button>
@@ -247,10 +247,10 @@ const ChatbotHelper: React.FC = () => {
                       <span>Virtual Cloud Lab Assistant</span>
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {apiProvider === 'ollama' ? (
-                        <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1 font-mono">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                          System Nominal • Llama 3.2 3B (Local)
+                      {apiProvider === 'gemini' ? (
+                        <span className="text-[10px] text-cyan-400 font-medium flex items-center gap-1 font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                          System Nominal • Google Gemini Cloud AI
                         </span>
                       ) : apiKey ? (
                         <span className="text-[10px] text-green-400 font-medium flex items-center gap-1 font-mono">
@@ -295,11 +295,11 @@ const ChatbotHelper: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 text-purple-300">
                   <Cpu className="w-3 h-3 text-purple-400" />
-                  <span>Engine: Llama3.2:3b</span>
+                  <span>Engine: Gemini 2.5 Flash</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-emerald-400">
                   <Server className="w-3 h-3 text-emerald-400" />
-                  <span>Port 11434</span>
+                  <span>Cloud API: Active</span>
                 </div>
               </div>
             </div>
@@ -312,7 +312,7 @@ const ChatbotHelper: React.FC = () => {
                   <Key className="w-5 h-5 shrink-0 text-cyan-400" />
                   <div className="text-xs">
                     <div className="font-semibold text-white">AI Instrumentation & Model Provider</div>
-                    <p className="text-slate-300 mt-0.5">Switch between local Llama 3.2 3B inference and external API tokens.</p>
+                    <p className="text-slate-300 mt-0.5">Switch between Google Gemini Cloud AI inference and external API tokens.</p>
                   </div>
                 </div>
 
@@ -326,8 +326,7 @@ const ChatbotHelper: React.FC = () => {
                       onChange={(e) => setApiProvider(e.target.value)}
                       className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
                     >
-                      <option value="ollama">🦙 Local Ollama (Llama 3.2 3B - 100% Offline)</option>
-                      <option value="gemini">Google Gemini API</option>
+                      <option value="gemini">✨ Google Gemini Cloud AI (Gemini 2.5 Flash)</option>
                       <option value="openai">OpenAI (GPT-4o / GPT-3.5)</option>
                       <option value="anthropic">Anthropic Claude</option>
                     </select>
@@ -439,7 +438,7 @@ const ChatbotHelper: React.FC = () => {
                       <div className="w-7 h-7 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.3)]">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                       </div>
-                      <span>⚡ Llama 3.2 3B inferencing telemetry stream...</span>
+                      <span>✨ Gemini AI inferencing telemetry stream...</span>
                     </div>
                   )}
 

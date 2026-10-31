@@ -33,3 +33,11 @@ instance/
 
 # Logs
 *.log
+
+# Archives
+*.zip
+*.tar.gz
+
+# Agent skills & metadata
+.agents/
+skills-lock.json

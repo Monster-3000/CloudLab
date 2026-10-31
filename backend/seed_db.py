@@ -1,6 +1,7 @@
 import os
+import csv
 from app import create_app
-from models import db, User, VirtualMachine, WarningNotification
+from models import db, User, VirtualMachine, WarningNotification, CatalogItem
 
 def seed_database():
     app = create_app()
@@ -32,123 +33,40 @@ def seed_database():
 
         print(f"--> Users created: admin (id: {admin.id}), cloud_engineer (id: {demo_user.id})")
 
-        # Initial realistic seed VMs (AWS & Multi-cloud instances)
-        sample_vms = [
-            VirtualMachine(
-                name='aws-ec2-frontend-web-01',
-                instance_type='t3.medium',
-                category='General Purpose',
-                monthly_cost=30.40,
-                hourly_cost=0.0416,
-                cpu_cores=2,
-                ram_gb=4,
-                storage_gb=40,
-                network_perf='Up to 5 Gbps',
-                architecture='x86_64',
-                os='Ubuntu 22.04 LTS',
-                region='us-east-1',
-                vendor='AWS',
-                status='Running',
-                ip_address='54.208.14.82',
-                user_id=demo_user.id
-            ),
-            VirtualMachine(
-                name='aws-ec2-api-server-graviton',
-                instance_type='m6g.xlarge',
-                category='General Purpose',
-                monthly_cost=112.32,
-                hourly_cost=0.154,
-                cpu_cores=4,
-                ram_gb=16,
-                storage_gb=100,
-                network_perf='Up to 12.5 Gbps',
-                architecture='ARM64 (Graviton3)',
-                os='Amazon Linux 2023',
-                region='us-east-1',
-                vendor='AWS',
-                status='Running',
-                ip_address='3.86.112.19',
-                user_id=demo_user.id
-            ),
-            VirtualMachine(
-                name='aws-ec2-selfhosted-postgres',
-                instance_type='r6i.large',
-                category='Memory Optimized',
-                monthly_cost=91.98,
-                hourly_cost=0.126,
-                cpu_cores=2,
-                ram_gb=16,
-                storage_gb=200,
-                network_perf='Up to 12.5 Gbps',
-                architecture='x86_64',
-                os='Amazon Linux 2023',
-                region='us-west-2',
-                vendor='AWS',
-                status='Running',
-                ip_address='52.32.90.144',
-                user_id=demo_user.id
-            ),
-            VirtualMachine(
-                name='aws-ec2-batch-analytics-worker',
-                instance_type='c6i.large',
-                category='Compute Optimized',
-                monthly_cost=62.05,
-                hourly_cost=0.085,
-                cpu_cores=2,
-                ram_gb=4,
-                storage_gb=50,
-                network_perf='Up to 12.5 Gbps',
-                architecture='x86_64',
-                os='Ubuntu 22.04 LTS',
-                region='eu-west-1',
-                vendor='AWS',
-                status='Stopped',
-                ip_address='34.240.18.5',
-                user_id=demo_user.id
-            ),
-            VirtualMachine(
-                name='azure-vm-k8s-node-01',
-                instance_type='Standard_D2s_v5',
-                category='General Purpose',
-                monthly_cost=70.00,
-                hourly_cost=0.096,
-                cpu_cores=2,
-                ram_gb=8,
-                storage_gb=64,
-                network_perf='4 Gbps',
-                architecture='x86_64',
-                os='Ubuntu 22.04 LTS',
-                region='eastus',
-                vendor='Azure',
-                status='Running',
-                ip_address='20.120.45.10',
-                user_id=demo_user.id
-            ),
-            VirtualMachine(
-                name='gcp-vm-bigquery-connector',
-                instance_type='n2-standard-4',
-                category='General Purpose',
-                monthly_cost=114.50,
-                hourly_cost=0.156,
-                cpu_cores=4,
-                ram_gb=16,
-                storage_gb=100,
-                network_perf='10 Gbps',
-                architecture='x86_64',
-                os='Debian 12',
-                region='us-central1',
-                vendor='GCP',
-                status='Running',
-                ip_address='35.208.192.4',
-                user_id=demo_user.id
-            )
-        ]
+        import random
+        previous_prices_usd = [3.10, 7.60, 15.20, 30.40, 70.08, 112.32, 62.05, 99.28, 91.98, 147.16, 168.00, 734.40, 146.00]
 
-        for vm in sample_vms:
-            db.session.add(vm)
+        try:
+            with open('data.csv', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    usd_price = row.get('illustrative_monthly_price_usd', '')
+                    inr_price = row.get('illustrative_monthly_price_inr', '')
+                    
+                    if 'Variable' in usd_price or 'usage-dependent' in usd_price:
+                        random_price = random.choice(previous_prices_usd)
+                        usd_price = f"~${random_price:.2f}"
+                        inr_price = f"~₹{int(random_price * 83.33)}"
 
-        db.session.commit()
-        print(f"--> {len(sample_vms)} realistic cloud instances seeded successfully!")
+                    item = CatalogItem(
+                        aws_service_name=row.get('aws_service_name'),
+                        category=row.get('category'),
+                        pricing_model=row.get('pricing_model'),
+                        illustrative_monthly_price_usd=usd_price,
+                        illustrative_monthly_price_inr=inr_price,
+                        monthly_price_example_or_basis=row.get('monthly_price_example_or_basis'),
+                        official_pricing_url=row.get('official_pricing_url'),
+                        notes=row.get('notes'),
+                        currency_conversion_assumption=row.get('currency_conversion_assumption'),
+                        pricing_checked_date=row.get('pricing_checked_date'),
+                        region_assumption=row.get('region_assumption'),
+                        price_status=row.get('price_status')
+                    )
+                    db.session.add(item)
+            db.session.commit()
+            print("--> CSV Catalog seeded successfully!")
+        except Exception as e:
+            print(f"Error seeding CSV: {e}")
 
 if __name__ == '__main__':
     seed_database()

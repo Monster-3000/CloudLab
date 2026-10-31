@@ -3,8 +3,9 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import VirtualInstances from './pages/VirtualInstances';
 import ArchitectureDesigner from './pages/ArchitectureDesigner';
-import NetworkLoad from './pages/NetworkLoad';
-import SecurityCenter from './pages/SecurityCenter';
+import AutoScalingPrediction from './pages/AutoScalingPrediction';
+// import NetworkLoad from './pages/NetworkLoad';
+// import SecurityCenter from './pages/SecurityCenter';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
@@ -53,8 +54,10 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="designer" element={<ArchitectureDesigner />} />
           <Route path="instances" element={<VirtualInstances />} />
-          <Route path="network" element={<NetworkLoad />} />
-          <Route path="security" element={<SecurityCenter />} />
+          <Route path="autoscaling" element={<AutoScalingPrediction />} />
+          {/* Disabled pages: */}
+          {/* <Route path="network" element={<NetworkLoad />} /> */}
+          {/* <Route path="security" element={<SecurityCenter />} /> */}
           <Route path="settings" element={<Settings />} />
           <Route path="users" element={
               <AdminRoute>

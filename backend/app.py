@@ -11,7 +11,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Initialize extensions
-    CORS(app) # Allow all origins for development
+    CORS(app, origins=["*"]) # Allow all origins for development
     db.init_app(app)
     jwt = JWTManager(app)
 

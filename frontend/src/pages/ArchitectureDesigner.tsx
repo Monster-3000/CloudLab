@@ -287,7 +287,7 @@ const ArchitectureDesigner = () => {
     let aiAuditText = '';
     try {
       const auditQuery = `Analyze this AWS architecture topology: ${nodes.length} total services (${ec2Count} EC2, ${rdsCount} RDS, ${albCount} ALB, ${s3Count} S3, ${redisCount} Redis, ${lambdaCount} Lambda). Connections count: ${edges.length}. Give 2-3 bullet recommendations for optimization.`;
-      const res = await api.post('/chat', { message: auditQuery, provider: 'ollama' });
+      const res = await api.post('/chat', { message: auditQuery, provider: 'gemini' });
       aiAuditText = res.data.reply || '';
     } catch (e) {
       console.error("AI audit failed", e);
@@ -502,7 +502,7 @@ const ArchitectureDesigner = () => {
             <div className="p-3.5 bg-gradient-to-r from-purple-950/40 via-slate-900 to-cyan-950/40 rounded-xl border border-purple-500/30 text-xs">
               <div className="flex items-center gap-2 text-purple-400 font-bold font-mono mb-1">
                 <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-                <span>AI Cloud Architectural Audit (Llama 3.2 3B):</span>
+                <span>AI Cloud Architectural Audit (Google Gemini AI):</span>
               </div>
               <div className="text-slate-200 leading-relaxed whitespace-pre-line font-sans">
                 {simulationResults.aiAudit}

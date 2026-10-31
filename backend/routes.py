@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, verify_jwt_in_request
-from models import db, User, VirtualMachine, WarningNotification
+from models import db, User, VirtualMachine, WarningNotification, CatalogItem
 import random
 import uuid
 import requests
@@ -234,36 +234,22 @@ def delete_vm(vm_id):
 
 @api_bp.route('/catalog', methods=['GET'])
 def get_catalog():
-    aws_catalog = [
-        { "type": "t4g.nano", "name": "AWS Graviton2 Micro", "category": "General Purpose", "vendor": "AWS", "cpu": 2, "ram": 0.5, "storage": 10, "monthly_cost": 3.10, "hourly_cost": 0.0042, "network": "Up to 5 Gbps", "arch": "ARM64 (Graviton2)" },
-        { "type": "t3.micro", "name": "General Purpose Micro", "category": "General Purpose", "vendor": "AWS", "cpu": 2, "ram": 1, "storage": 20, "monthly_cost": 7.60, "hourly_cost": 0.0104, "network": "Up to 5 Gbps", "arch": "x86_64" },
-        { "type": "t3.small", "name": "General Purpose Small", "category": "General Purpose", "vendor": "AWS", "cpu": 2, "ram": 2, "storage": 30, "monthly_cost": 15.20, "hourly_cost": 0.0208, "network": "Up to 5 Gbps", "arch": "x86_64" },
-        { "type": "t3.medium", "name": "General Purpose Medium", "category": "General Purpose", "vendor": "AWS", "cpu": 2, "ram": 4, "storage": 40, "monthly_cost": 30.40, "hourly_cost": 0.0416, "network": "Up to 5 Gbps", "arch": "x86_64" },
-        { "type": "m6i.large", "name": "AWS General Purpose Large", "category": "General Purpose", "vendor": "AWS", "cpu": 2, "ram": 8, "storage": 50, "monthly_cost": 70.08, "hourly_cost": 0.096, "network": "Up to 12.5 Gbps", "arch": "x86_64" },
-        { "type": "m6g.xlarge", "name": "AWS Graviton3 Large", "category": "General Purpose", "vendor": "AWS", "cpu": 4, "ram": 16, "storage": 100, "monthly_cost": 112.32, "hourly_cost": 0.154, "network": "Up to 12.5 Gbps", "arch": "ARM64 (Graviton3)" },
-        { "type": "c6i.large", "name": "AWS Compute Optimized", "category": "Compute", "vendor": "AWS", "cpu": 2, "ram": 4, "storage": 50, "monthly_cost": 62.05, "hourly_cost": 0.085, "network": "Up to 12.5 Gbps", "arch": "x86_64" },
-        { "type": "c6g.xlarge", "name": "AWS Compute Graviton3", "category": "Compute", "vendor": "AWS", "cpu": 4, "ram": 8, "storage": 100, "monthly_cost": 99.28, "hourly_cost": 0.136, "network": "Up to 12.5 Gbps", "arch": "ARM64 (Graviton3)" },
-        { "type": "r6i.large", "name": "AWS Memory Optimized", "category": "Memory", "vendor": "AWS", "cpu": 2, "ram": 16, "storage": 100, "monthly_cost": 91.98, "hourly_cost": 0.126, "network": "Up to 12.5 Gbps", "arch": "x86_64" },
-        { "type": "r6g.xlarge", "name": "AWS Memory Graviton3", "category": "Memory", "vendor": "AWS", "cpu": 4, "ram": 32, "storage": 200, "monthly_cost": 147.16, "hourly_cost": 0.2016, "network": "Up to 12.5 Gbps", "arch": "ARM64 (Graviton3)" },
-        { "type": "i3en.large", "name": "AWS High I/O NVMe Storage", "category": "Storage", "vendor": "AWS", "cpu": 2, "ram": 16, "storage": 1250, "monthly_cost": 168.00, "hourly_cost": 0.230, "network": "Up to 25 Gbps", "arch": "x86_64" },
-        { "type": "g5.xlarge", "name": "AWS NVIDIA A10G Tensor GPU", "category": "GPU / AI", "vendor": "AWS", "cpu": 4, "ram": 16, "storage": 250, "monthly_cost": 734.40, "hourly_cost": 1.006, "network": "Up to 25 Gbps", "arch": "x86_64" },
-        { "type": "db.r6g.large", "name": "AWS RDS PostgreSQL Primary", "category": "Database", "vendor": "AWS", "cpu": 2, "ram": 16, "storage": 200, "monthly_cost": 146.00, "hourly_cost": 0.20, "network": "Up to 12.5 Gbps", "arch": "ARM64 (Graviton3)" }
-    ]
-    return jsonify(aws_catalog), 200
+    items = CatalogItem.query.all()
+    return jsonify([i.to_dict() for i in items]), 200
 
 @api_bp.route('/chat', methods=['POST'])
 def chat_assistant():
     data = request.get_json() or {}
     user_prompt = data.get('message', '').strip()
     api_key = data.get('api_key', '').strip()
-    provider = data.get('provider', 'ollama').strip().lower()
+    provider = data.get('provider', 'gemini').strip().lower()
 
     if not user_prompt:
-        return jsonify({'reply': 'Hello! I am your CloudLab AI Assistant powered by your local Llama 3.2 3B model. Ask me anything about AWS EC2 instances, pricing, or architecture specs.'}), 200
+        return jsonify({'reply': 'Hello! I am your CloudLab AI Assistant powered by Google Gemini AI. Ask me anything about AWS EC2 instances, pricing, or architecture specs.'}), 200
 
-    # 1. Attempt connection to local Ollama endpoint (Llama 3.2 3B)
-    ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434/api/generate')
-    model_name = os.getenv('OLLAMA_MODEL', 'llama3.2:3b')
+    # 1. Attempt connection to Google Gemini API
+    gemini_key = api_key if provider == 'gemini' and api_key else os.getenv('GEMINI_API_KEY', '').strip()
+    gemini_model = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash').strip()
 
     system_context = (
         "You are CloudLab AI Assistant, an expert AWS cloud architect and infrastructure advisor. "
@@ -272,31 +258,42 @@ def chat_assistant():
         "Avoid long paragraphs or walls of unstructured text."
     )
 
-    formatted_prompt = f"{system_context}\n\nUser Question: {user_prompt}\n\nCloudLab AI Assistant:"
+    if gemini_key:
+        try:
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": f"{system_context}\n\nUser Question: {user_prompt}"}
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.4,
+                    "maxOutputTokens": 1000
+                }
+            }
+            gemini_res = requests.post(gemini_url, json=payload, timeout=15)
+            if gemini_res.status_code == 200:
+                res_json = gemini_res.json()
+                candidates = res_json.get('candidates', [])
+                if candidates:
+                    parts = candidates[0].get('content', {}).get('parts', [])
+                    if parts and 'text' in parts[0]:
+                        llm_reply = parts[0]['text'].strip()
+                        if llm_reply:
+                            return jsonify({
+                                'reply': llm_reply,
+                                'provider': f'{gemini_model} (Google Gemini Cloud AI)'
+                            }), 200
+            else:
+                print(f"[Chatbot] Gemini API responded with status {gemini_res.status_code}: {gemini_res.text[:200]}")
+        except Exception as e:
+            print(f"[Chatbot] Gemini API connection attempt: {e}. Utilizing built-in recommendation system.")
 
-    try:
-        ollama_res = requests.post(
-            ollama_url,
-            json={
-                "model": model_name,
-                "prompt": formatted_prompt,
-                "stream": False
-            },
-            timeout=20
-        )
-        if ollama_res.status_code == 200:
-            res_data = ollama_res.json()
-            llm_reply = res_data.get('response', '').strip()
-            if llm_reply:
-                return jsonify({
-                    'reply': llm_reply,
-                    'provider': 'llama3.2:3b (Local Ollama)'
-                }), 200
-    except Exception as e:
-        print(f"[Chatbot] Local Ollama model connection attempt: {e}. Utilizing built-in recommendation system.")
-
-    # 2. Rule-Based Fallback if Ollama server is offline or restarting
-    prefix = "🦙 [Llama 3.2 Local] " if provider == 'ollama' or provider == 'llama3.2' else ""
+    # 2. Rule-Based Fallback if Gemini is unreachable or offline
+    prefix = "✨ [Gemini Cloud AI] " if provider == 'gemini' else ""
     if api_key:
         prefix += "⚡ [Custom Key Connected] "
 

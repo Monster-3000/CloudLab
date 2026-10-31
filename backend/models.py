@@ -81,3 +81,35 @@ class WarningNotification(db.Model):
             'is_read': self.is_read,
             'created_at': self.created_at.isoformat()
         }
+
+class CatalogItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    aws_service_name = db.Column(db.String(150), nullable=False)
+    category = db.Column(db.String(100), nullable=True)
+    pricing_model = db.Column(db.String(255), nullable=True)
+    illustrative_monthly_price_usd = db.Column(db.String(100), nullable=True)
+    illustrative_monthly_price_inr = db.Column(db.String(100), nullable=True)
+    monthly_price_example_or_basis = db.Column(db.Text, nullable=True)
+    official_pricing_url = db.Column(db.String(255), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    currency_conversion_assumption = db.Column(db.String(255), nullable=True)
+    pricing_checked_date = db.Column(db.String(50), nullable=True)
+    region_assumption = db.Column(db.String(255), nullable=True)
+    price_status = db.Column(db.String(100), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'aws_service_name': self.aws_service_name,
+            'category': self.category,
+            'pricing_model': self.pricing_model,
+            'illustrative_monthly_price_usd': self.illustrative_monthly_price_usd,
+            'illustrative_monthly_price_inr': self.illustrative_monthly_price_inr,
+            'monthly_price_example_or_basis': self.monthly_price_example_or_basis,
+            'official_pricing_url': self.official_pricing_url,
+            'notes': self.notes,
+            'currency_conversion_assumption': self.currency_conversion_assumption,
+            'pricing_checked_date': self.pricing_checked_date,
+            'region_assumption': self.region_assumption,
+            'price_status': self.price_status
+        }
